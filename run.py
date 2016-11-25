@@ -63,8 +63,8 @@ def authorized():
         )
     session['github_token'] = (resp['access_token'], '')
     me = github.get('user')
-    # return jsonify(me.data)
-    return redirect(url_for('index'))
+    return jsonify(me.data)
+    #return redirect(url_for('index'))
 
 
 @github.tokengetter
