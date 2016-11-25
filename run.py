@@ -1,7 +1,7 @@
-from flask import Flask, redirect, url_for, session, request, jsonify
+from flask import Flask,g, redirect, url_for, session, request, jsonify
 from flask import render_template
 from flask_oauthlib.client import OAuth
-
+import json
 
 
 app = Flask(__name__)
@@ -21,29 +21,64 @@ github = oauth.remote_app(
     access_token_url='https://github.com/login/oauth/access_token',
     authorize_url='https://github.com/login/oauth/authorize'
 )
+def _decode_list(data):
+    rv = []
+    for item in data:
+        if isinstance(item, unicode):
+            item = item.encode('utf-8')
+        elif isinstance(item, list):
+            item = _decode_list(item)
+        elif isinstance(item, dict):
+            item = _decode_dict(item)
+        rv.append(item)
+    return rv
+
+def _decode_dict(data):
+    rv = {}
+    for key, value in data.iteritems():
+        if isinstance(key, unicode):
+            key = key.encode('utf-8')
+        if isinstance(value, unicode):
+            value = value.encode('utf-8')
+        elif isinstance(value, list):
+            value = _decode_list(value)
+        elif isinstance(value, dict):
+            value = _decode_dict(value)
+        rv[key] = value
+    return rv
+
+@github.tokengetter
+def get_github_oauth_token():
+    if 'github_token' in session:
+        resp = session['github_token']
+        return session.get('github_token')
+
+
+@app.before_request
+def before_request():
+    g.user = None
+    if 'github_token' in session:
+        g.user = session['github_token']
+
 
 @app.route('/')
 @app.route('/index')
 
 def index():
-    # user = {'nickname': 'Miguel'}  # fake user
-    return render_template('index.html',
-                           title='Home')
+    me = None
+    if 'github_token' in session:
+        #me = github.get('user')
+        #me = json.loads(json.dumps(github.get('user').data))
+        me = json.loads(json.dumps(github.get('user').data), object_hook=_decode_dict)
+        print(type(me))
+    return render_template('index.html', me = me)
 
+  #  return render_template('index.html',
+   #                        title='Home')
 
-# @app.route('/oauth')
-
-# def loginWithGithub():
-# 	if 'github_token' in session:
-# 		me = github.get('user')
-# 		return jsonify(me.data)
-# 	return redirect(url_for('login'))
 
 @app.route('/login')
 def login():
-    print("inside login")
-    print(url_for('authorized', _external=True))
-    print("printed URL")
     return github.authorize(callback=url_for('authorized', _external=True))
 
 @app.route('/logout')
@@ -63,13 +98,13 @@ def authorized():
         )
     session['github_token'] = (resp['access_token'], '')
     me = github.get('user')
-    return jsonify(me.data)
-    #return redirect(url_for('index'))
+    js = json.dumps(me.data)
+    #print(type(jsonify(me.data)))
+    print(js)
+    #return jsonify(me.data)
+    return redirect(url_for('index'))
 
 
-@github.tokengetter
-def get_github_oauth_token():
-    return session.get('github_token')
 
 if __name__ == "__main__":
 	app.run()

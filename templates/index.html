@@ -50,6 +50,11 @@
                     <li class="hidden">
                         <a href="#page-top"></a>
                     </li>
+                    {% if me %}
+                        <li class="pull-left">
+                           <a href="{{ url_for('index') }}">Hello {{me.name}}</a> 
+                        </li>
+                    {% endif %}
                     <li class="page-scroll">
                         <a href="#portfolio">Repositories</a>
                     </li>
@@ -59,6 +64,11 @@
                     <li class="page-scroll">
                         <a href="#contact">Contact</a>
                     </li>
+                    {% if g.user %}
+                        <li class="pull-right">
+                            <a href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -71,16 +81,23 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <img class="img-responsive" src="/static/img/profile.png" alt="">
+                    <img class="img-responsive" src="/static/img/ironcat.png" alt="" height="300" width="300">
                     <div class="intro-text">
                         <span class="name">Github Recommendation</span>
                         <hr class="star-light">
                         <span class="skills">Your Personal Recommender...</span>
                     </div>
                     <div class="col-lg-8 col-lg-offset-2 text-center">
-                    <a href="{{ url_for('login') }}" class="btn btn-lg btn-outline">
-                        <i class="fa fa-github"></i> Login With Github
-                    </a>
+                    {% if g.user %}
+                        <a href="#" class="btn btn-lg btn-outline">
+                            <i class="fa fa-github"></i> Get Recommendation
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-lg btn-outline">
+                            <i class="fa fa-github"></i> Login With Github
+                        </a>
+                    {% endif %}
+                    
                 </div>
                 </div>
             </div>
