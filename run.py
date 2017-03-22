@@ -14,8 +14,8 @@ my_dr_global = Driver()
 
 github = oauth.remote_app(
     'github',
-    consumer_key='9668bff6a6d0cf60d387',
-    consumer_secret='1adfdb0718d49e1f33bb68376ef439658c5f947d',
+    consumer_key='',
+    consumer_secret='',
     request_token_params={'scope': 'user:email'},
     base_url='https://api.github.com/',
     request_token_url=None,
